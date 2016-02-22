@@ -1,0 +1,11 @@
+commit 28ae0f59931a77afecba0847aace1d3ba953f9b5
+Author: Artem Pesetsky <shogifun@yandex.ru>
+Date:   Mon Feb 22 21:18:53 2016 +0300
+
+    Add status.txt
+
+commit c8db6f9c71fada01fbcbffb13c03aa53192886ae
+Author: Artem Pesetsky <shogifun@yandex.ru>
+Date:   Mon Feb 22 21:17:05 2016 +0300
+
+    Add .gitignore
