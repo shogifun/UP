@@ -8,53 +8,67 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class ChatWorking {
-    private LinkedList <Message> messageList;
-    private FileWriter writer;
-    public ChatWorking() throws IOException
+    private FileWriter log;
+    private History history=new History();
+    public ChatWorking()
     {
-        writer=new FileWriter("log.txt");
-        writer.write("Program start"+"\n");
-        messageList = new LinkedList<>();
-        Scanner in=new Scanner(System.in);
+        try
+        {
+            log = new FileWriter("log.txt");
+            log.write("Program start" + "\n");
 
+        Scanner in=new Scanner(System.in);
+        BufferedReader reader=new BufferedReader(new InputStreamReader(System.in));
         String choice=null;
         showVariants();
         choice=in.next();
-        while (!choice.equals("8"))
-        {
-            switch (choice) {
-                case "1":
-                    loadHistory();
-                    break;
-                case "2":
-                    saveHistory();
-                    break;
-                case "3":
-                    addMessage();
-                    break;
-                case "4":
-                    deleteById();
-                    break;
-                case "5":
-                    searchByAuthor();
-                    break;
-                case "6":
-                    searchByKeyword();
-                    break;
-                case "7":
-                    searchByTimePeriod();
-                    break;
-                case "8":
-                    break;
-                default:
-                    System.out.println("Invalid input");
+        try {
+
+
+            while (!choice.equals("8")) {
+                switch (choice) {
+                    case "1":
+                        loadHistory("history.json");
+                        break;
+                    case "2":
+                        saveHistory();
+                        break;
+                    case "3":
+                        addMessage(reader);
+                        break;
+                    case "4":
+                        deleteById(reader);
+                        break;
+                    case "5":
+                        searchByAuthor(reader);
+                        break;
+                    case "6":
+                        searchByKeyword(reader);
+                        break;
+                    case "7":
+                        searchByTimePeriod(reader);
+                        break;
+                    case "8":
+                        break;
+                    default:
+                        System.out.println("Invalid input");
+                }
+                showVariants();
+                choice = in.next();
             }
-            showVariants();
-            choice=in.next();
+        }catch (IOException e)
+        {
+            log.write("IOException "+e.getMessage());
         }
+        in.close();
         System.out.println("End working");
-        writer.write("End working");
-        writer.close();
+        log.write("End working");
+        reader.close();
+        log.close();
+        }catch (IOException e)
+        {
+            System.out.println(e.getMessage());
+        }
     }
     private void showVariants()
     {
@@ -68,211 +82,167 @@ public class ChatWorking {
         System.out.println("7.Searching messages in timeperiod");
         System.out.println("8.End working");
     }
-    private void loadHistory() throws IOException {
-        messageList.clear();
-        writer.write("Start loading history"+"\n");
+    private void loadHistory(String path) throws IOException {
+        log.write("Start loading history"+"\n");
         try {
-            String JSONData = Files.readAllLines(Paths.get("history.json")).toString();
-            JsonReader reader = Json.createReader(new StringReader(JSONData));
-            JsonArray jsonValues = reader.readArray();
+            String JSONData = Files.readAllLines(Paths.get(path)).toString();
+            JsonReader readerTmp = Json.createReader(new StringReader(JSONData));
+            JsonArray jsonValues = readerTmp.readArray();
             if (jsonValues.size() == 0) {
                 System.out.println("Your history is empty");
                 return;
             }
             JsonArray array = jsonValues.getJsonArray(0);
-            reader.close();
-            for (int i = 0; i < array.size(); i++) {
-                JsonObject tmpObj = array.getJsonObject(i);
-                Message tmp = new Message(new Timestamp(tmpObj.getJsonNumber("timestamp").longValue()), tmpObj.getString("id"), tmpObj.getString("message"),
-                        tmpObj.getString("author"));
-                messageList.add(tmp);
-            }
+            readerTmp.close();
+            history.loadFromFile(array);
             System.out.println("Loading complete");
-            writer.write("Loading complete"+"\n");
+            log.write("Loading complete"+"\n");
         } catch (FileNotFoundException e) {
             System.out.println("File not found " + e.getMessage());
-            writer.write("File not found " + e.getMessage()+"\n");
+            log.write("File not found " + e.getMessage()+"\n");
         }
-        writer.flush();
+        log.flush();
     }
     private void saveHistory() throws IOException
     {
-        if(!messageList.isEmpty())
-        {
+        if(!history.isHistoryEmpty()){
             System.out.println("Start saving");
-            writer.write("Start saving"+"\n");
+            log.write("Start saving"+"\n");
             FileWriter out = new FileWriter("history.json");
             JsonWriter writer = Json.createWriter(out);
-            JsonArrayBuilder writeArray = Json.createArrayBuilder();
-            for(Message message: messageList)
-            {
-                JsonObject tmp=Json.createObjectBuilder().add("timestamp",message.getTimestamp().getTime())
-                        .add("id",message.getId())
-                        .add("message",message.getMessage())
-                        .add("author",message.getAuthor())
-                        .build();
-                writeArray.add(tmp);
-            }
-            JsonArray array = writeArray.build();
-            writer.writeArray(array);
+            writer.writeArray( history.arrayForWriting());
             out.close();
             writer.close();
             System.out.println("Saving complete");
-            this.writer.write("Saving complete"+"\n");
-        }
-        else{
+            this.log.write("Saving complete"+"\n");
+        }else{
             System.out.println("History is empty");
-            writer.write("History is empty"+"\n");
+            log.write("History is empty"+"\n");
         }
-        writer.flush();
+        log.flush();
     }
-    private void addMessage() throws  IOException{
-        Scanner in=new Scanner(System.in);
 
+
+    private void addMessage(BufferedReader reader) throws  IOException{
         System.out.println("Enter author");
-        String author=in.next();
+        String author=reader.readLine();
 
         System.out.println("Enter message");
-        String message=in.next();
+        String message=reader.readLine();
         Random r=new Random();
         Timestamp currentTime=new Timestamp(System.currentTimeMillis());
         Message tmp=new Message(currentTime,r.nextInt()+"e",message,author);
-        messageList.add(tmp);
-        writer.write("Message added to history"+"\n");
-        writer.flush();
+        history.addMessage(tmp);
+        log.write("Message added to history"+"\n");
+        log.flush();
     }
-    private void deleteById() throws IOException
+    private void deleteById(BufferedReader reader) throws IOException
     {
-        writer.write("Trying to delete message by id");
-        if(messageList.isEmpty()){
+        log.write("Trying to delete message by id");
+        if(history.isHistoryEmpty()){
             System.out.println("History is empty");
-            writer.write("Deleting impossible - history is empty");
+            log.write("Deleting impossible - history is empty");
             return;
         }
         System.out.println("Enter id for deleting");
-        Scanner in=new Scanner(System.in);
-        String key=in.next();
-        int result=-1;
-        for(int i=0;i<messageList.size();i++)
-        {
-            if(messageList.get(i).getId().equals(key)){
-                result=i;
-                break;
-            }
-        }
-        if(result!=-1){
-            messageList.remove(result);
+        String key=reader.readLine();
+        boolean result=history.deleteById(key);
+        if(result){
             System.out.println("Deleted sucsesfully"+"\n");
-            writer.write("Deleted sucsesfully"+"\n");
+            log.write("Deleted sucsesfully"+"\n");
         }
         else{
             System.out.println("Messages is not found");
-            writer.write("Messages is not found"+"\n");
+            log.write("Messages is not found"+"\n");
         }
-        writer.flush();
+        log.flush();
     }
-    private void searchByAuthor() throws IOException{
-        writer.write("Start searching by author"+"\n");
-        if(messageList.isEmpty()){
+    private void searchByAuthor(BufferedReader reader) throws IOException{
+        log.write("Start searching by author"+"\n");
+        if(history.isHistoryEmpty()){
             System.out.println("History is empty");
-            writer.write("Searcing complete. History is empty"+"\n");
-            return;
+            log.write("Searcing complete. History is empty"+"\n");
         }
-        System.out.println("Enter author for searching");
-        Scanner in=new Scanner(System.in);
-        String key=in.next();
-        ArrayList<Message> result=new ArrayList<>();
-        for (Message message:messageList) {
-            if(message.getAuthor().equals(key)){
-                result.add(message);
-            }
-        }
-        if(result.isEmpty()){
-            System.out.println("No message from this author find");
-            writer.write("Searcing complete.No message from this author find\n");
-        }
-        else
-        {
-            System.out.println(result.size()+" messages find:");
-            writer.write("Searching complete: "+result.size()+" messages found");
-            for(Message message:result)
-            {
-                System.out.println(message);
-            }
+        else {
+            System.out.println("Enter author for searching");
+            String key = reader.readLine();
+            ArrayList<Message> result = history.searchByAutor(key);
+            if (result.isEmpty()) {
+                System.out.println("No message from this author find");
+                log.write("Searcing complete.No message from this author find\n");
+            } else {
+                System.out.println(result.size() + " messages find:");
+                log.write("Searching complete: " + result.size() + " messages found");
+                for (Message message : result) {
+                    System.out.println(message);
+                }
 
+            }
         }
-        writer.flush();
+        log.flush();
     }
-    private void searchByKeyword()throws  IOException{
-        writer.write("Searching messages by keyword\n");
-        if(messageList.isEmpty()){
+    private void searchByKeyword(BufferedReader reader)throws  IOException{
+        log.write("Searching messages by keyword\n");
+        if(history.isHistoryEmpty()){
             System.out.println("History is empty");
-            writer.write("Searching complete. History is empty "+"\n");
+            log.write("Searching complete. History is empty "+"\n");
             return;
         }
         System.out.println("Enter keyword for searching");
-        Scanner in=new Scanner(System.in);
-        String key=in.next();
-        ArrayList<Message> result=new ArrayList<>();
-        for(int i=0;i<messageList.size();i++)
-        {
-            if(messageList.get(i).getMessage().contains(key)){
-                result.add(messageList.get(i));
-            }
-        }
+        String key=reader.readLine();
+        ArrayList<Message> result=history.searchByKeyword(key);
+
+
         if(result.isEmpty()){
             System.out.println("No message with this keyword found");
-            writer.write("Searching complete. No message with this keyword found"+"\n");
+            log.write("Searching complete. No message with this keyword found"+"\n");
         }
         else
         {
             System.out.println(result.size()+" messages found:");
-            writer.write("Searching complete. "+result.size()+" messages found:"+"\n");
+            log.write("Searching complete. "+result.size()+" messages found:"+"\n");
             for(Message message:result)
             {
                 System.out.println(message);
             }
         }
+        log.flush();
+
+
     }
-    private void searchByTimePeriod()throws IOException{
+    private void searchByTimePeriod(BufferedReader reader)throws IOException{
         ;
-        if(messageList.isEmpty()){
+        if(history.isHistoryEmpty()){
             System.out.println("History is empty");
         }
         else{
             System.out.println("Enter the beginning of searching period in format: yyyy-MM-dd HH:mm:ss");
-            BufferedReader input=new BufferedReader(new InputStreamReader(System.in));
-            String beginingDate=input.readLine();
+            String beginingDate=reader.readLine();
             System.out.println("Enter the end of searching period format: yyyy-MM-dd HH:mm:ss");
-            String endDate=input.readLine();
+            String endDate=reader.readLine();
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             try {
                 Date dateBegin=dateFormat.parse(beginingDate);
                 Date dateEnd=dateFormat.parse(endDate);
-                writer.write("Start searching in timeperiod from "+dateBegin.toString()+"to "+dateEnd.toString()+"\n");
-                ArrayList<Message>result=new ArrayList<>();
-                for(Message message: messageList){
-                    if((message.getTimestamp().compareTo(dateBegin)>=0)&&(message.getTimestamp().compareTo(dateEnd)<=0)){
-                        result.add(message);
-                    }
-                }
+                log.write("Start searching in timeperiod from "+dateBegin.toString()+"to "+dateEnd.toString()+"\n");
+                ArrayList<Message>result=history.searchByTimeperiod(dateBegin,dateEnd);
                 if(result.size()==0) {
                     System.out.println("No messages found");
-                    writer.write("Searcing complete. No messages in this time period found"+"\n");
+                    log.write("Searcing complete. No messages in this time period found"+"\n");
                 }
                 else{
                     System.out.println(result.size()+" message(s) found:"+"\n");
-                    writer.write("Searcing complete "+result.size()+" message(s) found:"+"\n");
+                    log.write("Searcing complete "+result.size()+" message(s) found:"+"\n");
                     for(Message message:result){
                         System.out.println(message);
                     }
                 }
             }catch (ParseException e){
                 System.out.println("Invalid date input");
-                writer.write("ParseException "+e.getMessage()+"\n");
+                log.write("ParseException "+e.getMessage()+"\n");
             }
         }
-        writer.flush();
+        log.flush();
     }
 
 }

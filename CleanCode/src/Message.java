@@ -1,3 +1,4 @@
+import javax.json.JsonObject;
 import java.sql.Timestamp;
 public class Message {
     Timestamp timestamp;
@@ -41,6 +42,12 @@ public class Message {
         this.id = id;
         this.message = message;
         this.author = author;
+    }
+    public Message(JsonObject obj){
+        timestamp=new Timestamp(obj.getJsonNumber("timestamp").longValue());
+        id=obj.getString("id");
+        message=obj.getString("message");
+        author=obj.getString("author");
     }
 
     @Override

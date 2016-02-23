@@ -1,3 +1,8 @@
 Program start
 Start loading history
 Loading complete
+Searching messages by keyword
+Searching complete. 3 messages found:
+Searching messages by keyword
+Searching complete. 2 messages found:
+End working
