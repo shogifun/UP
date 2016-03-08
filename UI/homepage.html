@@ -4,31 +4,24 @@
     <meta charset="UTF-8">
     <title>TokuChat</title>
     <link rel="stylesheet" type="text/css" href="style.css">
+    <script src="Script.js" ></script>
 </head>
-<body >
+<body onload="run();">
     <h1>
         TokuChat
     </h1>
-    <h2>
-        Your current nickname is Stiv
+    <h2 id="h2">Your current nickname is Stiv</h2>
+    <h3 id="h3" >
         <input type="text" placeholder="Enter new nickname" id="inputNewNickname" class="inputNickname">
-        <button class="changeNickname" id="changeNickname">Change nickname</button>
+        <button id="changeNickname" class="changeNickname">Change nickname</button>
         <img src="no-server.jpg" id="noConnection" alt="no connection">
-    </h2>
-    <main class="messages">
-            <div class="myMessage">Message 1</div>
-            <div class="otherMessage">Message 2</div>
-            <div class="myMessage">Message 3</div>
-            <div class="myMessage">Message 3</div>
-            <div class="otherMessage">Message 3</div>
-            <div class="otherMessage">Message 3</div>
-            <div class="myMessage">Message 3</div>
-    </main>
-    <div>
+    </h3>
+    <div class="messages" id="messageList">
+
+    </div>
+    <div class="buttons">
         <textarea placeholder="Input message" id="newMessage"></textarea>
         <button id="send" class="controlButtons">Send message</button>
-        <button id="redact" class="controlButtons">Change message</button>
-        <button id="delete" class="controlButtons">Delete message</button>
     </div>
 
     <footer>
