@@ -76,19 +76,31 @@ function changeMessage(id){
     var res=0;
     for(var i=0;i<messageList.length;i++)
         if(messageList[i].id==div.id){
-            var messageForChange=messageList[i];
             res=i;
             break;
         }
-    var changedText=prompt('Enter changing in message:'+messageForChange.text);
-    if((changedText==null)||(changedText=='')) return;
-    messageForChange.text=changedText;
-    messageList[res].text=changedText;
-    messageList[res].isChanged=true;
-    var date = new Date(messageForChange.date);
-    div.innerHTML = date.toDateString() + ' ' + date.toLocaleTimeString() + ' ' + messageForChange.nickName + ':' +
-        messageForChange.text+' <i> This  message was changed</i>';
-    addButtons(div,messageList[res]);
+
+    while(div.firstChild){
+        div.removeChild(div.firstChild);
+    }
+
+    var textArea=document.createElement('textarea');
+    textArea.setAttribute('placeholder','Input message');
+    div.appendChild(textArea);
+
+    var okButton=document.createElement('button');
+    okButton.innerHTML='change';
+    okButton.className='controlButtons'
+    okButton.addEventListener('click',onOk);
+    div.appendChild(okButton);
+
+    var cancelButton=document.createElement('button');
+    cancelButton.className='controlButtons';
+    cancelButton.innerHTML='cancel';
+    cancelButton.addEventListener('click',onCancel);
+    div.appendChild(cancelButton);
+
+
 
 }
 function deleteMessage(id){
@@ -235,3 +247,28 @@ function clearDivList(){
     }
 
 }
+function onCancel(){
+    clearDivList();
+    render();
+}
+function onOk(){
+    var div=this.parentNode;
+    var input=div.firstChild;
+    var text=input.value;
+    while(div.firstChild){
+        div.removeChild(div.firstChild);
+    }
+    var res=0;
+    for(var i=0;i<messageList.length;i++)
+        if(messageList[i].id==div.id){
+            res=i;
+            break;
+        }
+    var text=input.value;
+    messageList[i].text=text;
+    messageList[i].isChanged=true;
+    clearDivList();
+    render();
+    saveToStorage();
+}
+
