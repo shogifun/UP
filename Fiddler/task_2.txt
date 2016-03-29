@@ -1,0 +1,12 @@
+GET http://192.168.1.25:999/chat?token=TN33EN HTTP/1.1
+Host: 192.168.1.25:999
+Content-Length: 43
+
+User-Agent:Composer
+Host: 192.168.1.25:999
+HTTP/1.1 200 OK
+Date: Tue, 29 Mar 2016 19:35:58 GMT
+Access-control-allow-origin: *
+Content-length: 40
+
+{"messages":["thanks"],"token":"TN35EN"}
