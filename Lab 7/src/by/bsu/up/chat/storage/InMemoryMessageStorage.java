@@ -52,7 +52,8 @@ public class InMemoryMessageStorage implements MessageStorage {
         //throw new UnsupportedOperationException("Update for messages is not supported yet");
         for (int i = 0; i < messages.size(); i++) {
             if (messages.get(i).getId().equals(message.getId())) {
-                messages.get(i).setText(message.getText());
+                messages.get(i).setText(message.getText()+"was edited");
+                messages.get(i).setIsEdit("was edited");
                 try {
                     saveMessages();
                 } catch (IOException e) {
@@ -69,7 +70,8 @@ public class InMemoryMessageStorage implements MessageStorage {
         //throw new UnsupportedOperationException("Removing of messages is not supported yet");
         for (int i = 0; i<messages.size(); i++){
             if (messages.get(i).getId().equals(messageId)){
-                messages.remove(i);
+                //messages.remove(i);
+                messages.get(i).setText("message was deleted");
                 try {
                     saveMessages();
                 }catch (IOException e){
@@ -93,7 +95,9 @@ public class InMemoryMessageStorage implements MessageStorage {
         catch (IOException e)
         {
             e.printStackTrace();
+
         }
+
 
     }
 
@@ -102,6 +106,7 @@ public class InMemoryMessageStorage implements MessageStorage {
                 .add("id",message.getId())
                 .add("message",message.getText())
                 .add("author",message.getAuthor())
+                .add("isEdit",message.getIsEdit())
                 .build();
     }
     public void saveMessages() throws  IOException{
@@ -128,6 +133,7 @@ public class InMemoryMessageStorage implements MessageStorage {
         for (int i = 0; i < array.size(); i++) {
             JsonObject tmpObj = array.getJsonObject(i);
             Message tmp = new Message(tmpObj);
+            //System.out.println(tmp);
             messages.add(tmp);
         }
 

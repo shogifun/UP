@@ -111,22 +111,28 @@ public class MessageHelper {
         return jsonObject.toJSONString();
     }
 
-    public static Message getClientMessage(InputStream inputStream) throws ParseException {
+    public static Message getClientMessage(InputStream inputStream,boolean isPost) throws ParseException {
         JSONObject jsonObject = stringToJsonObject(inputStreamToString(inputStream));
-        String id = ((String) jsonObject.get(Constants.Message.FIELD_ID));
-        String author = ((String) jsonObject.get(Constants.Message.FIELD_AUTHOR));
-        long timestamp = ((long) jsonObject.get(Constants.Message.FIELD_TIMESTAMP));
-        String text = ((String) jsonObject.get(Constants.Message.FIELD_TEXT));
         Message message = new Message();
+        String id = ((String) jsonObject.get(Constants.Message.FIELD_ID));
+        //long timestamp = Long.getLong(jsonObject.get(Constants.Message.FIELD_TIMESTAMP).toString());
+        String text = ((String) jsonObject.get(Constants.Message.FIELD_TEXT));
+        String isEdit=((String)jsonObject.get(Constants.Message.FIELD_EDIT));
         message.setId(id);
-        message.setAuthor(author);
-        message.setTimestamp(timestamp);
         message.setText(text);
+        message.setIsEdit(isEdit);
+        if (isPost){
+            long timestamp = ((long) jsonObject.get(Constants.Message.FIELD_TIMESTAMP));
+            String author = ((String) jsonObject.get(Constants.Message.FIELD_AUTHOR));
+            message.setAuthor(author);
+            message.setTimestamp(timestamp);
+        }
         return message;
     }
 
     public static JSONObject stringToJsonObject(String json) throws ParseException {
         // The same as (JSONObject) jsonParser.parse(json.trim());
+        //return JSONObject.class.cast(jsonParser.parse(json.trim()));
         return JSONObject.class.cast(jsonParser.parse(json.trim()));
     }
 
@@ -150,6 +156,7 @@ public class MessageHelper {
         jsonObject.put(Constants.Message.FIELD_AUTHOR, message.getAuthor());
         jsonObject.put(Constants.Message.FIELD_TIMESTAMP, message.getTimestamp());
         jsonObject.put(Constants.Message.FIELD_TEXT, message.getText());
+        jsonObject.put(Constants.Message.FIELD_EDIT,message.getIsEdit());
         return jsonObject;
     }
 }

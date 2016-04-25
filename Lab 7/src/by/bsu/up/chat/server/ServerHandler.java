@@ -65,6 +65,7 @@ public class ServerHandler implements HttpHandler {
     }
 
     private Response doGet(HttpExchange httpExchange) {
+
         String query = httpExchange.getRequestURI().getQuery();
         if (query == null) {
             return Response.badRequest("Absent query in request");
@@ -91,7 +92,7 @@ public class ServerHandler implements HttpHandler {
 
     private Response doPost(HttpExchange httpExchange) {
         try {
-            Message message = MessageHelper.getClientMessage(httpExchange.getRequestBody());
+            Message message = MessageHelper.getClientMessage(httpExchange.getRequestBody(),true);
             logger.info(String.format("Received new message from user: %s", message));
             messageStorage.addMessage(message);
             return Response.ok();
@@ -104,7 +105,7 @@ public class ServerHandler implements HttpHandler {
     private Response doPut(HttpExchange httpExchange) {
         //return Response.withCode(Constants.RESPONSE_CODE_NOT_IMPLEMENTED);
         try {
-            Message message = MessageHelper.getClientMessage(httpExchange.getRequestBody());
+            Message message = MessageHelper.getClientMessage(httpExchange.getRequestBody(),false);
             messageStorage.updateMessage(message);
             return Response.ok();
         } catch (ParseException e) {
@@ -114,15 +115,14 @@ public class ServerHandler implements HttpHandler {
     }
 
     private Response doDelete(HttpExchange httpExchange) {
-        //return Response.withCode(Constants.RESPONSE_CODE_NOT_IMPLEMENTED);
-        String query = httpExchange.getRequestURI().getQuery();
-        if (query == null) {
-            return Response.badRequest("Absent query in request");
+        try {
+            Message message = MessageHelper.getClientMessage(httpExchange.getRequestBody(),false);
+            messageStorage.removeMessage(message.getId());
+            return Response.ok();
+        } catch (ParseException e) {
+            logger.error("Could not parse message.", e);
+            return new Response(Constants.RESPONSE_CODE_BAD_REQUEST, "Incorrect request body");
         }
-        Map<String, String> map = queryToMap(query);
-        String token = map.get(Constants.REQUEST_PARAM_MESSAGE_ID);
-        messageStorage.removeMessage(token);
-        return Response.ok();
     }
 
     private Response doOptions(HttpExchange httpExchange) {

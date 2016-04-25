@@ -10,15 +10,30 @@ public class Message implements Serializable {
     private String author;
     private long timestamp;
     private String text;
-    public Message(JsonObject obj){
-        timestamp= obj.getJsonNumber("timestamp").longValue();
-        id=obj.getString("id");
-        text=obj.getString("message");
-        author=obj.getString("author");
-    }
+    private String isEdit;
 
     public Message() {
+        this.id = "";
+        this.author = "";
+        this.timestamp = 0;
+        this.text = "";
+        this.isEdit = "";
+    }
 
+    public Message(JsonObject temp) {
+        this.author = temp.getString("author");
+        this.timestamp = temp.getJsonNumber("timestamp").longValue();
+        this.text = temp.getString("message");
+        this.isEdit = temp.getString("isEdit");
+        this.id = temp.getString("id");
+    }
+
+    public String getIsEdit() {
+        return isEdit;
+    }
+
+    public void setIsEdit(String isEdit) {
+        this.isEdit = isEdit;
     }
 
     public String getId() {
@@ -60,6 +75,7 @@ public class Message implements Serializable {
                 ", author='" + author + '\'' +
                 ", timestamp=" + timestamp +
                 ", text='" + text + '\'' +
+                ", isEdit=' " + isEdit + '\'' +
                 '}';
     }
 }
